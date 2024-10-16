@@ -1,30 +1,26 @@
-name: Deploy Azure Functions
+name: CI/CD for Frontend
 
 on:
   push:
     branches:
-      - main  # Adjust if your default branch is different
+      - main  # Change to your default branch if different
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'  # Specify your Python version
+    - name: Login to Azure
+      uses: Azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}  # Set this secret in GitHub
 
-      - name: Install dependencies
-        run: |
-          pip install -r Backend/requirements.txt  # Correct path to requirements.txt
-
-      - name: Deploy to Azure Functions
-        uses: azure/functions-action@v1
-        with:
-          app-name: sheriCanadaCentral  # Your Function App name
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-          package: 'Backend'  # Ensure this points to the correct package location
+    - name: Deploy to Azure Storage
+      run: |
+        az storage blob upload-batch \
+          --account-name shaheryarstorage  \
+          --destination '$web' \
+          --source '.'  # Use current directory as source
